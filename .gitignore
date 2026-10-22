@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.vercel/
+.env
+.env.*
+!.env.example
+supabase/.temp/
+supabase/.branches/
+supabase/functions/.env
+qa/
+*.zip
+*.tar.gz
+*.log
+*.sqlite*

@@ -1,0 +1,4 @@
+* text=auto
+vendor/*.js -whitespace
+插个U盘_离线版.html -whitespace
+supabase/functions/usb-game-api/index.ts text eol=lf

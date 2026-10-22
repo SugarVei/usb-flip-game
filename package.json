@@ -1,0 +1,16 @@
+{
+  "name": "usb-flip-game",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "scripts": {
+    "build": "node build.mjs",
+    "build:edge": "node scripts/build-edge.mjs",
+    "start": "node server.mjs",
+    "test": "node --test tests/engine.test.mjs tests/verify.test.mjs tests/proxy.test.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "test:leaderboard": "node tests/leaderboard.mjs"
+  },
+  "devDependencies": { "esbuild": "0.25.12", "playwright": "1.56.1" }
+}

@@ -1,0 +1,15 @@
+import { build } from 'esbuild';
+import { readFile, writeFile, mkdir, copyFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root = path.dirname(fileURLToPath(import.meta.url));
+const result = await build({ entryPoints: [path.join(root, 'src/main.js')], bundle: true, minify: true, format: 'iife', target: ['es2020'], write: false, legalComments: 'inline' });
+const [template, baseCSS, landscapeCSS] = await Promise.all([readFile(path.join(root, 'index.html'), 'utf8'), readFile(path.join(root, 'src/style.css'), 'utf8'), readFile(path.join(root, 'src/landscape.css'), 'utf8')]);
+const css = baseCSS + '\n' + landscapeCSS + '\n' + await readFile(path.join(root, 'src/layout.css'), 'utf8');
+const script = result.outputFiles[0].text.replace(/<\/script/gi, '<\\/script');
+const html = template.replace('/* STYLES */', () => css).replace('/* SCRIPT */', () => script);
+await mkdir(path.join(root, 'dist'), { recursive: true });
+await writeFile(path.join(root, 'dist/index.html'), html);
+await writeFile(path.join(root, '插个U盘_离线版.html'), html);
+await copyFile(path.join(root, 'vendor/THREE-LICENSE.txt'), path.join(root, 'dist/THREE-LICENSE.txt'));
+console.log(`Built offline-ready HTML: ${(Buffer.byteLength(html) / 1024).toFixed(1)} KB`);

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#dce8df">
+  <meta name="description" content="连续前进的三维插 U 盘游戏。左右移动，翻转，对准落下的电脑插口。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='17' y='27' width='30' height='32' rx='7' fill='%23f5f0e7'/%3E%3Cpath d='M22 27V7h20v20' fill='%235a7067'/%3E%3Cpath d='M27 12v6m10-6v6' stroke='%23efeadb' stroke-width='4'/%3E%3C/svg%3E">
+  <title>插个 U 盘</title>
+  <style>/* STYLES */</style>
+</head>
+<body>
+  <div id="game-layout">
+  <aside id="rank-host" aria-label="全国排行榜"></aside>
+  <main id="app">
+    <div id="scene" role="img" aria-label="U盘持续前进，电脑从上方落到桌面的三维游戏"></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <output id="score" aria-label="已通过0台电脑">00</output>
+    <nav class="tools" aria-label="游戏操作">
+      <button id="leaderboard-btn" class="icon-btn" aria-label="排行榜"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 4h8v6a4 4 0 0 1-8 0V4Zm0 2H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4m-4 1v6m-4 0h8"/></svg></button>
+      <button id="tutorial-btn" class="icon-btn" aria-label="查看插入演示"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 7 7 5-7 5V7Z"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/></svg></button>
+      <button id="sound-btn" class="icon-btn" aria-label="关闭音效" aria-pressed="true"></button>
+      <button id="pause-btn" class="icon-btn" aria-label="暂停游戏"></button>
+    </nav>
+    <div class="control-dock" aria-label="移动与翻转">
+      <button id="left-btn" class="move-btn" aria-label="向左移动"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m13 6-6 6 6 6m-6-6h13"/></svg></button>
+      <button id="flip-btn" class="flip-btn" aria-label="翻转U盘180度"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 7a8 8 0 1 0 1 8M19 3v5h-5"/></svg></button>
+      <button id="right-btn" class="move-btn" aria-label="向右移动"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m11 6 6 6-6 6m6-6H4"/></svg></button>
+    </div>
+    <div id="modal-backdrop" class="modal-backdrop" hidden>
+      <section id="nickname-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="nickname-title" hidden>
+        <h1 id="nickname-title">你的昵称</h1>
+        <form id="nickname-form"><label class="sr-only" for="nickname">你的昵称</label><input id="nickname" name="nickname" maxlength="32" autocomplete="nickname" placeholder="输入昵称" required><p id="nickname-status" class="form-status" role="status"></p><button class="primary-btn" type="submit">开始挑战</button></form>
+      </section>
+      <section id="pause-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="pause-title" hidden>
+        <h1 id="pause-title">已暂停</h1>
+        <button id="resume-btn" class="primary-btn">继续</button>
+        <button id="pause-restart-btn" class="secondary-btn">重新开始</button>
+      </section>
+      <section id="result-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden>
+        <h1 id="result-title">游戏失败</h1>
+        <output id="result-score" aria-label="本局通过数量">00</output>
+        <p id="result-player-name"></p>
+        <p id="submit-status" class="form-status" role="status" aria-live="polite"></p>
+        <button id="retry-score-btn" class="secondary-btn" hidden>重试保存成绩</button>
+        <button id="restart-btn" class="primary-btn">再来一次</button>
+        <button id="result-board-btn" class="secondary-btn">查看排行榜</button>
+      </section>
+      <section id="leaderboard-modal" class="modal leaderboard-modal" role="dialog" aria-modal="true" aria-labelledby="board-title" hidden>
+        <div class="board-heading"><h1 id="board-title">全国排行榜</h1><button id="close-board-btn" class="icon-btn" aria-label="关闭排行榜"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+        <div class="board-tabs" role="tablist" aria-label="成绩分类"><button id="best-tab" role="tab" aria-selected="true" aria-controls="board-panel" data-mode="best">最高排名</button><button id="all-tab" role="tab" aria-selected="false" aria-controls="board-panel" data-mode="all">全部成绩</button></div>
+        <div class="board-meta"><span id="board-count">正在读取</span><button id="refresh-board-btn">刷新</button></div>
+        <div id="board-panel" class="board-scroll" role="tabpanel" aria-labelledby="best-tab" tabindex="0"><table><thead><tr><th scope="col">排名</th><th scope="col">玩家</th><th scope="col">插对数量</th></tr></thead><tbody id="board-rows"></tbody></table><p id="board-status" role="status" aria-live="polite"></p><button id="more-board-btn" class="secondary-btn" hidden>加载更多</button></div>
+        <button id="challenge-btn" class="primary-btn">继续挑战</button>
+      </section>
+      <section id="tutorial-modal" class="modal tutorial-modal" role="dialog" aria-modal="true" aria-labelledby="tutorial-title" hidden>
+        <div class="board-heading"><h1 id="tutorial-title">怎么插 U 盘</h1><button id="close-tutorial-btn" class="icon-btn" aria-label="关闭演示"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+        <div class="demo-stage" role="img" aria-label="循环演示：U盘横移对准插口，翻转使上下舌片错开，再向前正确插入">
+          <svg id="insertion-demo" viewBox="0 0 240 260" fill="none" aria-hidden="true">
+            <defs><linearGradient id="demo-case" x2="1" y2="1"><stop stop-color="#cbd3c5"/><stop offset="1" stop-color="#a6b6a4"/></linearGradient></defs>
+            <path d="M50 126v117m70-117v117m70-117v117" stroke="#93a58b" stroke-opacity=".22" stroke-dasharray="3 6"/>
+            <g id="demo-computer"><rect x="25" y="26" width="190" height="68" rx="8" fill="#597161"/><rect x="31" y="32" width="178" height="55" rx="4" fill="#2d493b"/><path d="m110 49 22 11-22 11V49Z" fill="#9eb895"/><path d="m25 94-13 24a6 6 0 0 0 5 9h206a6 6 0 0 0 5-9l-13-24H25Z" fill="url(#demo-case)"/><path d="M42 102h156m-163 7h169" stroke="#718c76" stroke-width="4" stroke-dasharray="9 3"/><rect x="98" y="114" width="44" height="7" rx="2" fill="#93a98f"/><g id="demo-port"><rect x="-16" y="122" width="32" height="12" rx="2" fill="#354f41" stroke="#d6dccd" stroke-width="2"/><path d="M-12 130h24" stroke="#c8d0b6" stroke-width="3"/></g></g>
+            <g id="demo-plug"><ellipse cx="0" cy="40" rx="16" ry="5" fill="#8c9e80" opacity=".16"/><g id="demo-plug-turn"><rect x="-11" y="-24" width="22" height="30" rx="2" fill="#aab8a4" stroke="#8ca086"/><path d="M-5-17v6m10-6v6" stroke="#567550" stroke-width="4"/><rect x="-15" y="3" width="30" height="45" rx="8" fill="#faf8ea" stroke="#d2d9c7"/><path d="M-7 35H7" stroke="#afbea1" stroke-width="2"/></g></g>
+            <g id="demo-check" opacity="0"><circle cx="120" cy="186" r="20" fill="#78966a"/><path d="m111 186 6 6 13-14" stroke="#fffced" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+          </svg>
+          <span id="demo-location" class="demo-location">左侧插口</span>
+        </div>
+        <div class="demo-faces"><span>插口正面</span><span>U 盘正面</span><svg viewBox="0 0 220 48" aria-hidden="true"><g><rect x="4" y="5" width="78" height="34" rx="4" fill="#94a48e"/><rect x="10" y="10" width="66" height="24" rx="1" fill="#2d493b"/><rect id="demo-port-tongue" x="13" y="26" width="60" height="6" fill="#c4ceb4"/></g><path d="M99 22h22m-5-5 5 5-5 5" fill="none" stroke="#8d9e80" stroke-width="1.8"/><g><rect x="138" y="5" width="78" height="34" rx="4" fill="#b7c2ab"/><rect x="144" y="10" width="66" height="24" rx="1" fill="#2d493b"/><rect id="demo-usb-tongue" x="147" y="26" width="60" height="6" fill="#b8c7aa"/></g></svg></div>
+        <ol class="demo-steps"><li data-step="0"><b>01</b><span>左右移动，对准插口</span><kbd>← →</kbd></li><li data-step="1"><b>02</b><span>翻转，让舌片错开</span><kbd>空格</kbd></li><li data-step="2"><b>03</b><span>保持对准，向前插入</span><span class="demo-tick">✓</span></li></ol>
+        <button id="replay-demo-btn" class="secondary-btn">重播演示 <span aria-hidden="true">↻</span></button>
+      </section>
+      <section id="connection-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="connection-title" hidden>
+        <h1 id="connection-title">暂时连接不上</h1><p id="connection-status" class="form-status" role="status"></p><button id="retry-connection-btn" class="primary-btn">重试</button>
+      </section>
+    </div>
+    <div id="loading" class="loading" role="status" aria-label="正在加载游戏"><div class="loading-plug"></div></div>
+    <noscript>请开启 JavaScript 以游玩。</noscript>
+  </main>
+  <aside id="tutorial-host" aria-label="插入演示"></aside>
+  </div>
+  <script>/* SCRIPT */</script>
+</body>
+</html>

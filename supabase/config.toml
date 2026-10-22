@@ -1,0 +1,4 @@
+project_id = "usb-flip-game"
+[functions.usb-game-api]
+verify_jwt = true
+entrypoint = "./functions/usb-game-api/index.ts"
